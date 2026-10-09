@@ -1,48 +1,122 @@
-#include <cstdint>
+#pragma once
+
 #include <array>
+#include <cstdint>
 #include <string>
 #include <string_view>
-#include <sstream>
-#include "NodeId.hpp"
-#include <HeadNode.hpp>
-#include <CoolingNode.hpp>
+
+
+enum class NodeId : uint8_t
+{
+    Broadcast = 0,
+    Head = 1,
+    Cooling = 2,
+    Arms = 3,
+    Base = 4
+};
+
+
+// Transport type.
+// Single 
+// Sequence 
+enum class FrameType : uint8_t
+{
+    Single = 0,
+    SequenceStart,
+    SequenceData,
+    SequenceEnd,
+    Ack
+};
+
+enum class CanPriority : uint8_t
+{
+    Critical = 0,
+    High = 1,
+    Normal = 3,
+    Low = 7
+};
+
 
 enum class CommandId : uint8_t
 {
-	Set = 1,
-	Stop,
-	GetStatus,
-	Status
+    Set = 1,
+    Stop,
+    GetStatus,
+    Status,
+    Heartbeat
 };
 
 
 struct Command
 {
-	NodeId node;
-	CommandId command;
-	uint8_t dataLength;
-	std::array<uint8_t, 7> data;
+    NodeId node{};
+    CommandId command{};
+
+    uint8_t dataLength{};
+    std::array<uint8_t, 7> data{};
 };
+
+
+struct CanIdFields
+{
+    CanPriority priority{};
+    NodeId node{};
+    FrameType type{};
+};
+
 
 struct CanFrame
 {
-	uint32_t id;
-	uint8_t length;
-	std::array<uint8_t, 8> data;
+    // Standard CAN ID
+    uint32_t id{};
+
+    uint8_t length{};
+    std::array<uint8_t, 8> data{};
 };
 
 
-std::array<uint8_t, 2> encodeInt16(int16_t val);
-int16_t decodeInt16(std::array<uint8_t, 2>pac);
-//Command - CAN
-CanFrame encodeCommand(const Command& cmd);
+std::array<uint8_t, 2> encodeInt16(int16_t value);
+int16_t decodeInt16(std::array<uint8_t, 2> data);
+
+std::array<uint8_t, 4> encodeInt32(int32_t value);
+int32_t decodeInt32(std::array<uint8_t, 4> data);
+
+
+// 11-bit CAN ID
+//
+// bits [10:8] = priority
+// bits [7:3]  = node
+// bits [2:0]  = frame type
+
+uint32_t encodeCanId(
+    CanPriority priority,
+    NodeId node,
+    FrameType type
+);
+
+CanIdFields decodeCanId(uint32_t id);
+
+
+// Command <-> CAN Single frame
+
+CanFrame encodeCommand(
+    const Command& cmd,
+    CanPriority priority = CanPriority::Normal
+);
+
 Command decodeCommand(const CanFrame& frame);
 
-bool isValidNode(uint32_t id);
-bool isValidCommand(uint8_t value);
+
+bool isValidNode(NodeId node);
+bool isValidCommand(CommandId command);
+bool isValidFrameType(FrameType type);
+
 bool isValidFrame(const CanFrame& frame);
 
+
 std::string commandToString(const Command& cmd);
+std::string frameToString(const CanFrame& frame);
+
 std::string_view toString(NodeId id);
 std::string_view toString(CommandId id);
-std::string frameToString(const CanFrame& frame);
+std::string_view toString(FrameType type);

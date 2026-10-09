@@ -1,13 +1,18 @@
 #include <iostream>
 
 #include "RobotProtocol.hpp"
+#include "HeadNode.hpp"
 
 int main()
 {
     std::cout << "Robot project started\n";
 
-    Command original =
-        makeSetCommand(HeadNode::Target::Yaw, -1700);
+    HeadNode head;
+
+    head.setYaw(1700);
+    head.setPitch(1450);
+
+    Command original = head.makeCommand();
 
     CanFrame frame = encodeCommand(original);
 

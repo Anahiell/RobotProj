@@ -9,7 +9,7 @@ add_executable(RobotProj
     RobotProj/src/main.cpp
     RobotProj/src/HeadController.cpp
     RobotProj/common/protocol/RobotProtocol.cpp
-)
+ "RobotProj/common/nodes/HeadNode.cpp")
 
 target_include_directories(RobotProj PRIVATE
     RobotProj/include
