@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <vector>
 
 
 enum class NodeId : uint8_t
@@ -52,8 +53,7 @@ struct Command
     NodeId node{};
     CommandId command{};
 
-    uint8_t dataLength{};
-    std::array<uint8_t, 7> data{};
+    std::vector<uint8_t> data{};
 };
 
 
@@ -99,7 +99,7 @@ CanIdFields decodeCanId(uint32_t id);
 
 // Command <-> CAN Single frame
 
-CanFrame encodeCommand(
+std::vector<CanFrame> encodeCommand(
     const Command& cmd,
     CanPriority priority = CanPriority::Normal
 );

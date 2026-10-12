@@ -1,39 +1,25 @@
 #include <iostream>
-
 #include "RobotProtocol.hpp"
-#include "HeadNode.hpp"
 
 int main()
 {
-    std::cout << "Robot project started\n";
+    Command cmd{};
 
-    HeadNode head;
+    cmd.node = NodeId::Head;
+    cmd.command = CommandId::Set;
+    cmd.dataLength = 19;
 
-    head.setYaw(1700);
-    head.setPitch(1450);
-
-    Command original = head.makeCommand();
-
-    CanFrame frame = encodeCommand(original);
-
-    if (!isValidFrame(frame))
+    for (size_t i = 0; i < cmd.dataLength; ++i)
     {
-        std::cout << "Invalid frame\n";
-        return 1;
+        cmd.data[i] = static_cast<uint8_t>(i);
     }
 
-    Command decoded = decodeCommand(frame);
+    auto frames = encodeCommand(cmd, CanPriority{});
 
-    std::cout
-        << "\nORIGINAL\n"
-        << commandToString(original)
+    std::cout << "Total frames: " << frames.size() << '\n';
 
-        << "\n\nFRAME\n"
-        << frameToString(frame)
-
-        << "\n\nDECODED\n"
-        << commandToString(decoded)
-        << std::endl;
-
-    return 0;
+    for (const auto& frame : frames)
+    {
+        std::cout << frameToString(frame) << "\n\n";
+    }
 }
