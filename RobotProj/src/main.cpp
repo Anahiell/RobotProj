@@ -4,12 +4,12 @@
 void printPlatform() {
 #if defined(_WIN32)
     std::cout << "Platform: Windows\n";
-#elif defined(_linux_)
+#elif defined(__linux__)
     std::cout << "Platform:Linux\n";
 
-#if defined(_aarch64_)
+#if defined(__aarch64__)
     std::cout << "Architexture: ARM64\n";
-#elif defined(_x84_64_)
+#elif defined(__x84_64__)
     std::cout << "Architexture: x86_64\n";
 #endif
 
