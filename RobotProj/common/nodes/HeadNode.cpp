@@ -19,18 +19,14 @@ Command HeadNode::makeCommand()
     cmd.node = Id;
     cmd.command = CommandId::Set;
 
-    cmd.data[0] = changedMask_;
-
     auto yawBytes = encodeInt16(yaw_);
     auto pitchBytes = encodeInt16(pitch_);
 
-    cmd.data[1] = yawBytes[0];
-    cmd.data[2] = yawBytes[1];
-
-    cmd.data[3] = pitchBytes[0];
-    cmd.data[4] = pitchBytes[1];
-
-    cmd.dataLength = 5;
+    cmd.data = {
+        changedMask_,
+        yawBytes[0], yawBytes[1],
+        pitchBytes[0], pitchBytes[1]
+    };
 
     changedMask_ = 0;
 

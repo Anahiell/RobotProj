@@ -111,7 +111,7 @@ std::vector<CanFrame> encodeCommand(
 	const Command& cmd,
 	CanPriority priority)
 {
-	if (cmd.dataLength > cmd.data.size())
+	if (cmd.data.size() > cmd.data.size())
 		return {};
 
 	std::vector<CanFrame> frames{};
@@ -119,9 +119,9 @@ std::vector<CanFrame> encodeCommand(
 
 	size_t sourceOffset = 0;
 	uint8_t sequenceId = 1; //TODO: Временно для тестирования
-	if (cmd.dataLength > 7)
+	if (cmd.data.size() > 7)
 	{
-		size_t count_frames = 1 + (cmd.dataLength - 4 + 5) / 6;
+		size_t count_frames = 1 + (cmd.data.size() - 4 + 5) / 6;
 		for (size_t i = 0; i < count_frames; i++)
 		{
 			frame = CanFrame{};
@@ -133,7 +133,7 @@ std::vector<CanFrame> encodeCommand(
 					FrameType::SequenceStart
 				);
 				frame.data[0] = static_cast<uint8_t>(cmd.command);
-				uint16_t length = cmd.dataLength;
+				uint16_t length = static_cast<uint16_t>(cmd.data.size());
 
 				frame.data[1] = sequenceId; 
 				frame.data[2] = static_cast<uint8_t>(length >> 8);
@@ -164,7 +164,7 @@ std::vector<CanFrame> encodeCommand(
 				frame.length = 2; // Data / End
 			}
 			
-			while (frame.length < 8 && sourceOffset < cmd.dataLength)
+			while (frame.length < 8 && sourceOffset < cmd.data.size())
 			{
 				frame.data[frame.length] = cmd.data[sourceOffset];
 
@@ -184,12 +184,12 @@ std::vector<CanFrame> encodeCommand(
 		frame.data[0] =
 			static_cast<uint8_t>(cmd.command);
 
-		for (uint8_t i = 0; i < cmd.dataLength; ++i)
+		for (uint8_t i = 0; i < cmd.data.size(); ++i)
 		{
 			frame.data[i + 1] = cmd.data[i];
 		}
 
-		frame.length = cmd.dataLength + 1;
+		frame.length = cmd.data.size() + 1;
 		frames.push_back(frame);
 	}
 	return frames;
@@ -221,9 +221,8 @@ Command decodeCommand(const CanFrame& frame)
 	cmd.node = id.node;
 	cmd.command = command;
 
-	cmd.dataLength = frame.length - 1;
-
-	for (uint8_t i = 0; i < cmd.dataLength; ++i)
+	cmd.data.resize(frame.length - 1);
+	for (uint8_t i = 0; i < cmd.data.size(); ++i)
 	{
 		cmd.data[i] = frame.data[i + 1];
 	}
@@ -332,10 +331,10 @@ std::string commandToString(const Command& cmd)
 	out << "\nNode: " << toString(cmd.node)
 		<< "\nCommand: " << toString(cmd.command)
 		<< "\nData Length: "
-		<< static_cast<int>(cmd.dataLength)
+		<< static_cast<int>(cmd.data.size())
 		<< "\nData: ";
 
-	for (uint8_t i = 0; i < cmd.dataLength; ++i)
+	for (uint8_t i = 0; i < cmd.data.size(); ++i)
 	{
 		out << std::hex
 			<< std::uppercase
