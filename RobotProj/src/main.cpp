@@ -54,6 +54,8 @@ void printHelp()
     std::cout << "  --demo       Run protocol demo\n";
     std::cout << "  --can IFACE  Listen on CAN interface\n";
 }
+#ifdef __linux__
+
 int runCan(std::string_view interfaceName) {
     SocketCanTransport transport;
     CommandDecoder decoder;
@@ -61,12 +63,12 @@ int runCan(std::string_view interfaceName) {
 
     return 0;
 }
+#endif
 int main(int argc, char* argv[])
 {
     if (argc == 2 && std::string_view(argv[1]) == "--demo")
     {
         runDemo();
-        int runCan(std::string_view interfaceName);
         return 0;
     }
     if (argc == 1 || (argc == 2 && std::string_view(argv[1]) == "--help"))
