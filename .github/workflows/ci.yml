@@ -1,0 +1,25 @@
+name: RobotProj CI
+
+on:
+ push:
+  branches: [master]
+ pull_request:
+  branches: [master]
+
+jobs:
+ linux-build:
+  runs-on: ubuntu-latest
+
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+    - name: Build RobotProj
+      run: cmake --build build --parallel 2
+
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure

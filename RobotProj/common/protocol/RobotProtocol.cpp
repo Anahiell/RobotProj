@@ -106,13 +106,14 @@ CanIdFields decodeCanId(uint32_t id)
 // ============================================================
 // Command <-> CAN
 // ============================================================
+constexpr std::size_t MAX_SEQUENCE_PAYLOAD = 1534;
 
 std::vector<CanFrame> encodeCommand(
 	const Command& cmd,
 	CanPriority priority)
 {
-	if (cmd.data.size() > cmd.data.size())
-		return {};
+	if (cmd.data.size() > MAX_SEQUENCE_PAYLOAD)
+		return{};
 
 	std::vector<CanFrame> frames{};
 	CanFrame frame{};
@@ -184,12 +185,12 @@ std::vector<CanFrame> encodeCommand(
 		frame.data[0] =
 			static_cast<uint8_t>(cmd.command);
 
-		for (uint8_t i = 0; i < cmd.data.size(); ++i)
+		for (std::size_t i = 0; i < cmd.data.size(); ++i)
 		{
 			frame.data[i + 1] = cmd.data[i];
 		}
 
-		frame.length = cmd.data.size() + 1;
+		static_cast<uint8_t>(cmd.data.size() + 1);
 		frames.push_back(frame);
 	}
 	return frames;
