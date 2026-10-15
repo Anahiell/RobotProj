@@ -4,7 +4,7 @@
 
 RobotProj is an ongoing personal robotics engineering project built around a **Raspberry Pi 5**, independently controlled **ESP32 nodes**, and a custom **Classical CAN command protocol**. The goal is to keep high-level control, message encoding, and low-level actuator firmware separate, so the robot can evolve one subsystem at a time.
 
-**Current milestone:** the C++ application builds and runs on **Windows x64** and **Linux ARM64** (Raspberry Pi 5), producing the same CAN sequence-fragmentation output on both platforms. Hardware prototypes for the neck mechanism and cooling control have also been built and tested independently. **End-to-end communication over physical CAN is not implemented yet.**
+**Current milestone:** the C++ application builds on Windows and Linux (x86-64/ARM64); the protocol encoder and stateful sequence decoder are implemented and tested in software. GitHub Actions CI builds and runs CTest on Windows 2022, Ubuntu x86-64 and Ubuntu ARM64. Hardware prototypes for the neck mechanism and cooling control have also been built and tested independently. **End-to-end communication over physical CAN is not implemented yet.**
 
 <p align="center">
   <img src="docs/media/hardware/robot-platform.jpg" width="46%" alt="RobotProj prototype with Raspberry Pi 5 and servo neck mechanism" />
@@ -20,11 +20,11 @@ RobotProj is an ongoing personal robotics engineering project built around a **R
 | Host computer | Raspberry Pi 5 (16 GB), Debian 13 ARM64, NVMe SSD — **running** |
 | C++ application | Native CMake builds on Windows x64 and Linux ARM64 — **verified** |
 | Node models | `HeadNode` / `HeadController` and command payload generation — **implemented in the prototype** |
-| Protocol | `Command` encoding and Classical CAN sequence fragmentation — **software demo working** |
+| Protocol | `CommandEncoder` fragmentation and `CommandDecoder` Single/Sequence reassembly — **implemented and unit-tested in software** |
 | Neck hardware | Servo-driven mechanism with experimental ESP32 control — **motion demonstrated** |
 | Cooling hardware | ESP32 fan-control prototype with PWM — **bench prototype** |
-| Physical CAN transport | Raspberry Pi ↔ ESP32 CAN interface — **planned / not yet demonstrated** |
-| Reassembly, ACKs and retries | **Planned** |
+| Physical CAN transport | Linux `SocketCanTransport` send/receive wrapper implemented; CLI `--can` and end-to-end hardware integration **not yet operational** |
+| Reassembly, ACKs and retries | Single/Sequence reassembly **implemented and tested**; ACKs, retries, timeouts and multi-sequence handling **pending** |
 | ROS 2, vision and further nodes | **Planned** |
 
 ## Hardware demonstration
@@ -214,3 +214,15 @@ The current executable is primarily a **protocol demonstration and integration s
 The objective is to learn and validate **systems-level robotics engineering** through a real build: C++ design, binary protocol boundaries, microcontroller firmware, Linux deployment, electrical integration, and motion hardware. The project intentionally exposes intermediate stages instead of presenting unfinished features as completed ones.
 
 **Project status:** active development · hardware and software prototypes · no complete end-to-end autonomous operation yet.
+
+
+## Development status (October 2026)
+
+- **Implemented:** `RobotCore` static library, CMake cross-platform builds, `CommandEncoder`, stateful `CommandDecoder` (`Single`, `SequenceStart`, `SequenceData`, `SequenceEnd`), and Linux `SocketCanTransport` with socket open/close/send/receive methods.
+- **Tested in CI:** GoogleTest/CTest protocol tests including signed integer round-trips, Single payload, fragmentation for payload lengths 8–1534, and Sequence encode/decode round-trips. GitHub Actions matrix: `windows-2022`, `ubuntu-24.04`, `ubuntu-24.04-arm`.
+- **Not yet demonstrated:** `--can IFACE` receive loop in the CLI, SocketCAN end-to-end traffic through the application, physical Pi-to-ESP32 CAN exchange, ACK/retry/timeout policy, and deployment automation.
+- **Known limitations:** the encoder currently uses a fixed sequence ID; the decoder tracks one pending sequence without a timeout; the command debug formatter uses an 8-bit loop index that can wrap for payloads of 256 bytes or more. These are tracked as GitHub Issues, not completed features.
+
+### Task tracking
+
+See [open GitHub Issues](https://github.com/Anahiell/RobotProj/issues) for small, independently closable tasks. Complete and test one change at a time before closing its issue. CI success confirms current tests pass; it does not imply hardware or transport integration is complete.
