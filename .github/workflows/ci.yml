@@ -6,21 +6,31 @@ on:
  pull_request:
   branches: [master]
 
+permissions:
+ contents: read
+
 jobs:
- linux-build:
-  runs-on: ubuntu-24.04
-  
-
-
+ build-and-test:
+  name: Build & Test (${{ matrix.os }})
+  runs-on: ${{ matrix.os }}
+  timeout-minutes: 15
+  strategy:
+   fail-fast: false
+   matrix:
+    os:
+     - ubuntu-24.04
+     - ubuntu-24.04-arm
+     - windows-2022
+     
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
+   - name: Checkout repository
+     uses: actions/checkout@v7
+  
+   - name: Configure CMake
+     run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 
+   - name: Build RobotProj
+     run: cmake --build build --config Debug --parallel 2
 
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-    - name: Build RobotProj
-      run: cmake --build build --parallel 2
-
-    - name: Run tests
-      run: ctest --test-dir build --output-on-failure
+   - name: Run tests
+     run: ctest --test-dir build -C Debug --output-on-failure
