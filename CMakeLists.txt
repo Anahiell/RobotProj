@@ -12,12 +12,17 @@ add_library(RobotCore STATIC
     RobotProj/src/HeadController.cpp
     RobotProj/common/protocol/RobotProtocol.cpp
     RobotProj/common/nodes/HeadNode.cpp
+    RobotProj/common/protocol/CommandEncoder.cpp
+    RobotProj/common/protocol/CommandDecoder.cpp
+
 )
 
 target_include_directories(RobotCore PUBLIC
     RobotProj/include
     RobotProj/common/protocol
     RobotProj/common/nodes
+    RobotProj/common/transport
+
 )
 
 # Main application
@@ -25,6 +30,17 @@ add_executable(RobotProj
     RobotProj/src/main.cpp
 )
 
+target_link_libraries(RobotProj PRIVATE RobotCore)
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_sources(RobotProj PRIVATE
+        RobotProj/common/transport/linux/SocketCanTransport.cpp
+    )
+
+    target_include_directories(RobotProj PRIVATE
+        RobotProj/common/transport/linux
+    )
+    endif()
 target_link_libraries(RobotProj PRIVATE RobotCore)
 
 

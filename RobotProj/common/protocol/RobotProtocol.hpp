@@ -97,14 +97,7 @@ uint32_t encodeCanId(
 CanIdFields decodeCanId(uint32_t id);
 
 
-// Command <-> CAN Single frame
 
-std::vector<CanFrame> encodeCommand(
-    const Command& cmd,
-    CanPriority priority = CanPriority::Normal
-);
-
-Command decodeCommand(const CanFrame& frame);
 
 
 bool isValidNode(NodeId node);
